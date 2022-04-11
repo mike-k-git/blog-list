@@ -1,0 +1,9 @@
+POST http://localhost:3003/api/blogs HTTP/1.1
+Content-Type: application/json
+
+{
+  "title": "I explain with words and code.",
+  "author": "Dan Abramov",
+  "url": "https://overreacted.io",
+  "likes": 0
+}
