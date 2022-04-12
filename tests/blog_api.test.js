@@ -69,4 +69,12 @@ test('default value of the "likes" property is 0', async () => {
   const addedBlog = blogsAtEnd.find((r) => r.url === newBlogWithoutLikes.url)
   expect(addedBlog.likes).toBe(0)
 })
+
+test('cannot save malformed blog record', async () => {
+  const malformedBlog = {
+    author: 'Tim Seckinger',
+  }
+
+  await api.post('/api/blogs').send(malformedBlog).expect(400)
+})
 afterAll(() => mongoose.connection.close())
