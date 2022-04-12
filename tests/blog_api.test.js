@@ -23,4 +23,10 @@ test('app returns the correct amount of blog posts', async () => {
   expect(blogs.body).toHaveLength(helper.initialBlogs.length)
 })
 
+test('a blog record identified by property named "id"', async () => {
+  const blog = await helper.blogInDb()
+
+  expect(blog.id).toBeDefined()
+})
+
 afterAll(() => mongoose.connection.close())
