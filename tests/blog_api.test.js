@@ -50,4 +50,23 @@ test('a valid blog can be added', async () => {
   expect(urls).toContain('https://jestjs.io/blog/2021/05/25/jest-27')
 })
 
+test('default value of the "likes" property is 0', async () => {
+  const newBlogWithoutLikes = {
+    title: 'Jest 27: New Defaults for Jest, 2021 edition ⏩',
+    author: 'Tim Seckinger',
+    url: 'https://jestjs.io/blog/2021/05/25/jest-27',
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlogWithoutLikes)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+
+  const addedBlog = blogsAtEnd.find((r) => r.url === newBlogWithoutLikes.url)
+  expect(addedBlog.likes).toBe(0)
+})
 afterAll(() => mongoose.connection.close())
