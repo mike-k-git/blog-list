@@ -20,7 +20,10 @@ app.use(express.json())
 morgan.token('body', (request) => JSON.stringify(request.body))
 app.use(
   morgan(
-    ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :body'
+    ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :body',
+    {
+      skip: () => process.env.NODE_ENV === 'test',
+    }
   )
 )
 app.use('/api/blogs', blogsRouter)

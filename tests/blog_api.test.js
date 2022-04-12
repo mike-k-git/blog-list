@@ -29,4 +29,25 @@ test('a blog record identified by property named "id"', async () => {
   expect(blog.id).toBeDefined()
 })
 
+test('a valid blog can be added', async () => {
+  const newBlog = {
+    title: 'Jest 27: New Defaults for Jest, 2021 edition ⏩',
+    author: 'Tim Seckinger',
+    url: 'https://jestjs.io/blog/2021/05/25/jest-27',
+    likes: 0,
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+
+  const urls = blogsAtEnd.map((r) => r.url)
+  expect(urls).toContain('https://jestjs.io/blog/2021/05/25/jest-27')
+})
+
 afterAll(() => mongoose.connection.close())
