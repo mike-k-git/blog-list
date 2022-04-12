@@ -20,8 +20,8 @@ describe('when there is initially some blog posts saved', () => {
   })
 
   test('all posts are returned', async () => {
-    const response = await api.get('/api/blogs')
-    expect(response.body).toHaveLength(helper.initialBlogs.length)
+    const blogs = await api.get('/api/blogs')
+    expect(blogs.body).toHaveLength(helper.initialBlogs.length)
   })
 
   test('a blog record identified by property named "id"', async () => {
@@ -99,6 +99,23 @@ describe('deletion of a blog', () => {
     const urls = blogsAtEnd.map((r) => r.url)
 
     expect(urls).not.toContain(blogToDelete.url)
+  })
+})
+
+describe('update a blog', () => {
+  test('succeeds with status code 200 and returns the updated blog', async () => {
+    const blog = await helper.blogInDb()
+    const newBlog = { ...blog, likes: blog.likes + 1 }
+    delete newBlog.id
+
+    const response = await api
+      .put(`/api/blogs/${blog.id}`)
+      .send(newBlog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    expect(blog.id).toBe(response.body.id)
+    expect(newBlog.likes).toBe(response.body.likes)
   })
 })
 
