@@ -4,11 +4,8 @@ const helper = require('./test_helper')
 const app = require('../app')
 const api = supertest(app)
 
-const Blog = require('../models/blog')
-
 beforeEach(async () => {
-  await Blog.deleteMany({})
-  await Blog.insertMany(helper.initialBlogs)
+  await helper.dbInit()
 })
 
 describe('when there is initially some blog posts saved', () => {
@@ -39,8 +36,11 @@ describe('addition of a new blog', () => {
       likes: 0,
     }
 
+    const validUser = await helper.validUser()
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${validUser.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -57,7 +57,13 @@ describe('addition of a new blog', () => {
       author: 'Tim Seckinger',
     }
 
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    const validUser = await helper.validUser()
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${validUser.token}`)
+      .send(newBlog)
+      .expect(400)
 
     const blogsAtEnd = await helper.blogsInDb()
 
@@ -71,8 +77,11 @@ describe('addition of a new blog', () => {
       url: 'https://jestjs.io/blog/2021/05/25/jest-27',
     }
 
+    const validUser = await helper.validUser()
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${validUser.token}`)
       .send(newBlogWithoutLikes)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -88,9 +97,16 @@ describe('addition of a new blog', () => {
 describe('deletion of a blog', () => {
   test('succeeds with status code 204 if id is valid', async () => {
     const blogsAtStart = await helper.blogsInDb()
-    const blogToDelete = blogsAtStart[0]
+    const validUser = await helper.validUser()
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+    const blogToDelete = blogsAtStart.find(
+      (blog) => blog.user.id === validUser.id
+    )
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${validUser.token}`)
+      .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
 
@@ -99,6 +115,19 @@ describe('deletion of a blog', () => {
     const urls = blogsAtEnd.map((r) => r.url)
 
     expect(urls).not.toContain(blogToDelete.url)
+  })
+
+  test('failed with status code 401 if the operation is not authorized', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+
+    const blogToDelete = blogsAtStart[0]
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(401)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+    const urls = blogsAtEnd.map((r) => r.url)
+    expect(urls).toContain(blogToDelete.url)
   })
 })
 
