@@ -64,27 +64,4 @@ describe('adding a new user returns an appropriate response status and error mes
   })
 })
 
-describe('adding a new blog', () => {
-  test('by an anonymous user returns 401 status code', async () => {
-    const blog = { title: 'title', url: 'url', author: 'author' }
-    await api.post('/api/blogs').send(blog).expect(401)
-  })
-
-  test('by an authorized user returns a new blog', async () => {
-    const blog = { title: 'title', url: 'url', author: 'author' }
-    const token = await helper.validToken()
-
-    const result = await api
-      .post('/api/blogs')
-      .set('authorization', `Bearer ${token}`)
-      .send(blog)
-      .expect(201)
-
-    const expectedKeys = ['title', 'author', 'url', 'likes', 'user', 'id']
-    expect(Object.keys(result.body)).toEqual(
-      expect.arrayContaining(expectedKeys)
-    )
-  })
-})
-
 afterAll(async () => mongoose.connection.close())

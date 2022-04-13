@@ -92,6 +92,21 @@ describe('addition of a new blog', () => {
     const addedBlog = blogsAtEnd.find((r) => r.url === newBlogWithoutLikes.url)
     expect(addedBlog.likes).toBe(0)
   })
+
+  test('fails with status code 401 if the operation is not authorized', async () => {
+    const newBlog = {
+      title: 'Jest 27: New Defaults for Jest, 2021 edition ⏩',
+      author: 'Tim Seckinger',
+      url: 'https://jestjs.io/blog/2021/05/25/jest-27',
+      likes: 0,
+    }
+
+    await api.post('/api/blogs').send(newBlog).expect(401)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+  })
 })
 
 describe('deletion of a blog', () => {
@@ -117,7 +132,7 @@ describe('deletion of a blog', () => {
     expect(urls).not.toContain(blogToDelete.url)
   })
 
-  test('failed with status code 401 if the operation is not authorized', async () => {
+  test('fails with status code 401 if the operation is not authorized', async () => {
     const blogsAtStart = await helper.blogsInDb()
 
     const blogToDelete = blogsAtStart[0]
