@@ -20,7 +20,15 @@ const blogSchema = mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    autopopulate: { select: 'username name' },
   },
+  comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Comment',
+      autopopulate: true,
+    },
+  ],
 })
 
 blogSchema.set('toJSON', {
@@ -30,5 +38,7 @@ blogSchema.set('toJSON', {
     delete returnedObject.__v
   },
 })
+
+blogSchema.plugin(require('mongoose-autopopulate'))
 
 module.exports = mongoose.model('Blog', blogSchema)
